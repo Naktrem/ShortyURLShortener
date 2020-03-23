@@ -1,0 +1,41 @@
+#!/Users/atakan/PycharmProjects/MenuBarURLShortener/venv/bin/python
+
+import os
+import sys
+import optparse
+from ConfigParser import ConfigParser
+
+import bitlyapi
+
+def parse_args():
+    p = optparse.OptionParser()
+    p.add_option('-f', '--config', default='~/.bitly')
+    return p.parse_args()
+
+def main():
+    opts, args = parse_args()
+
+    config = ConfigParser()
+    config.read(os.path.expanduser(opts.config))
+
+    if not config.has_section('bitly'):
+        print >>sys.stderr, 'Failed to read bit.ly API configuration ' \
+                'from %s.' % opts.config
+        sys.exit(1)
+
+    api = bitlyapi.BitLy(
+            config.get('bitly', 'api_user'),
+            config.get('bitly', 'api_key'),
+            )
+
+    if args:
+        url = args[0]
+    else:
+        url = sys.stdin.readline().strip()
+
+    res = api.shorten(longUrl=url)
+    print res[url]['shortUrl']
+
+if __name__ == '__main__':
+    main()
+
